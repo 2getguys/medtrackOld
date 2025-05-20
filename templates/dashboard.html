@@ -1,0 +1,501 @@
+{% extends "base.html" %}
+
+{% block title %}Кабінет - Medtrack AI{% endblock %}
+
+{% block content %}
+{# ===================================================== #}
+{# Блок приветствия                                         #}
+{# ===================================================== #}
+<div class="mb-6">
+  <h1 class="text-3xl font-bold text-gray-800">Ласкаво просимо!</h1>
+  <p class="text-gray-600">Ваш персональний кабінет Medtrack AI.</p>
+</div>
+
+{# Подготовка вычислений BMI/статуса #}
+{% set bmi = None %}
+{% set bmi_status = '' %}
+{% set bmi_color = 'text-gray-600' %}
+{% if current_user.height_cm and current_user.weight_kg and current_user.height_cm > 0 %}
+  {% set height_m = current_user.height_cm / 100 %}
+  {% set bmi = (current_user.weight_kg / (height_m * height_m)) | round(1) %}
+  {% if bmi < 18.5 %}
+      {% set bmi_status = 'Недостатня вага' %}
+      {% set bmi_color = 'text-blue-600' %}
+  {% elif bmi < 25 %}
+      {% set bmi_status = 'Нормальна вага' %}
+      {% set bmi_color = 'text-green-600' %}
+  {% elif bmi < 30 %}
+      {% set bmi_status = 'Надмірна вага' %}
+      {% set bmi_color = 'text-amber-600' %}
+  {% else %}
+      {% set bmi_status = 'Ожиріння' %}
+      {% set bmi_color = 'text-red-600' %}
+  {% endif %}
+{% endif %}
+
+{# ===================================================== #}
+{# Основная сетка                                          #}
+{# ===================================================== #}
+<main class="grid grid-cols-12 gap-6" x-data="{ activeParameter: null }">
+
+  {# --------------------------------------------------- #}
+  {# Карточка «Профіль здоров'я» (основная, 8 колонок)  #}
+  {# --------------------------------------------------- #}
+  <div class="col-span-12 lg:col-span-8 bg-white rounded-xl shadow-md overflow-hidden">
+    <div class="h-1.5 bg-gradient-to-r from-cyan-500 to-blue-500"></div>
+    <div class="p-6">
+      <h2 class="text-xl font-semibold text-gray-800 mb-4">Ваш профіль здоров'я</h2>
+
+      <div class="flex flex-col md:flex-row md:items-center">
+        {# ----------------------------- #}
+        {# Динамический силуэт (М/Ж)    #}
+        {# ----------------------------- #}
+        <div class="w-full md:w-1/2 flex items-center justify-center md:pr-6">
+          {% if profile_user.sex == 'male' %}
+            <img src="{{ url_for('static', filename='images/silhouette_male.png') }}"
+                 alt="Силует чоловіка"
+                 class="w-96 h-auto object-contain select-none">
+          {% elif profile_user.sex == 'female' %}
+            <img src="{{ url_for('static', filename='images/silhouette_female.png') }}"
+                 alt="Силует жінки"
+                 class="w-96 h-auto object-contain select-none">
+          {% else %}
+            {# Можно добавить SVG-заглушку или оставить пустым, если пол не указан #}
+            <div class="w-96 h-96 flex items-center justify-center bg-gray-100 rounded-full">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-20 w-20 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+          {% endif %}
+        </div>
+
+        {# ----------------------------- #}
+        {# Сетка параметров / персональные данные #}
+        {# ----------------------------- #}
+        <div class="w-full md:w-1/2 grid grid-cols-1 gap-4">
+          {# Персональная информация #}
+          <div class="bg-gray-50 rounded-lg p-4 border border-gray-100">
+            <div class="flex items-center justify-between mb-3">
+              <h4 class="text-sm font-semibold text-gray-700 uppercase">Персональна інформація</h4>
+              <a href="{{ url_for('profile_edit') }}" title="Редагувати профіль"
+                 class="text-gray-400 hover:text-cyan-600 transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                </svg>
+              </a>
+            </div>
+            <div class="space-y-1.5 text-sm">
+              <div class="flex justify-between items-center">
+                <span class="text-gray-500">Імʼя:</span>
+                <span class="font-medium text-gray-800">{{ profile_user.name or profile_user.email }}</span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="text-gray-500">Вік:</span>
+                <span class="font-medium text-gray-800">{{ age if age is not none else '—' }} років</span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="text-gray-500">Стать:</span>
+                <span class="font-medium text-gray-800">{{ 'Чоловіча' if current_user.sex == 'male' else 'Жіноча' if current_user.sex == 'female' else 'Не вказано' }}</span>
+              </div>
+              {% set smoke_map = {
+                  'yes':'Курю',
+                  'no':'Не курю',
+                  'stopped':'Кинув(ла)'
+              } %}
+              <div class="flex justify-between items-center">
+                <span class="text-gray-500">Куріння:</span>
+                <span class="font-medium text-gray-800">
+                    {{ smoke_map.get(profile_user.is_smoker, '–') }}
+                </span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="text-gray-500">Звич. тиск:</span>
+                <span class="font-medium text-gray-800">
+                    {{ profile_user.usual_systolic or '–' }}/{{ profile_user.usual_diastolic or '–' }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {# Сетка health-показников (4 карточки) #}
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {# ИМТ #}
+            <div class="stat-card bg-white p-3 rounded-lg border border-gray-100 shadow-sm" :class="{ 'ring-2 ring-cyan-500 ring-opacity-50': activeParameter == 'bmi' }">
+              <div class="flex justify-between items-start mb-1.5">
+                <span class="text-xs font-medium text-gray-500 uppercase">ІМТ</span>
+                {% if bmi %}
+                  <span class="px-1.5 py-0.5 text-xs bg-amber-100 text-amber-700 rounded">{{ bmi_status }}</span>
+                {% endif %}
+              </div>
+              <div class="flex items-baseline">
+                <span class="text-2xl font-bold text-gray-800">{{ bmi if bmi else '--' }}</span>
+              </div>
+              {% if bmi %}
+              <div class="mt-2">
+                <div class="level-indicator">
+                  <div class="bg-green-400" style="width: 30%; left: 0;"></div>
+                  <div class="bg-amber-400" style="width: 15%; left: 30%;"></div>
+                  <div class="bg-orange-400" style="width: 20%; left: 45%;"></div>
+                  <div class="bg-red-400" style="width: 35%; left: 65%;"></div>
+                  {# Розрахунок позиції маркера більш точно #}
+                  {% if bmi < 18.5 %}
+                      {% set indicator_pos = (bmi/18.5*30)|round(0) %}
+                  {% elif bmi < 25 %}
+                      {% set indicator_pos = 30 + ((bmi-18.5)/(25-18.5)*15)|round(0) %}
+                  {% elif bmi < 30 %}
+                      {% set indicator_pos = 45 + ((bmi-25)/5*20)|round(0) %}
+                  {% else %}
+                      {% set indicator_pos = 65 + ((bmi-30)/10*35)|round(0) %}
+                      {% if indicator_pos > 100 %}{% set indicator_pos = 100 %}{% endif %}
+                  {% endif %}
+                  <div class="w-1.5 h-6 bg-black absolute" style="left: {{ indicator_pos }}%; top: -3px; transform: translateX(-50%); border-radius: 2px;"></div>
+                </div>
+                <div class="flex justify-between mt-1 text-xs text-gray-500">
+                   <span>18.5</span><span>25</span><span>30</span><span>40+</span>
+                </div>
+              </div>
+              {% endif %}
+            </div>
+
+            {# Зріст #}
+            <div class="stat-card bg-white p-3 rounded-lg border border-gray-100 shadow-sm" :class="{ 'ring-2 ring-cyan-500 ring-opacity-50': activeParameter == 'height' }">
+              <span class="text-xs font-medium text-gray-500 uppercase">Зріст</span>
+              <div class="flex items-baseline">
+                <span class="text-2xl font-bold text-gray-800">{{ current_user.height_cm if current_user.height_cm else '--' }}</span>
+                <span class="ml-1 text-sm text-gray-600">см</span>
+              </div>
+              {% if current_user.height_cm %}
+              <div class="mt-2">
+                <div class="level-indicator">
+                  <div class="bg-cyan-400" style="width: 68%;"></div>
+                </div>
+                <div class="flex justify-between mt-1 text-xs">
+                  <span class="text-gray-500">Середній для вашого віку</span>
+                </div>
+              </div>
+              {% endif %}
+            </div>
+
+            {# Вага #}
+            <div class="stat-card bg-white p-3 rounded-lg border border-gray-100 shadow-sm" :class="{ 'ring-2 ring-cyan-500 ring-opacity-50': activeParameter == 'weight' }">
+              <span class="text-xs font-medium text-gray-500 uppercase">Вага</span>
+              <div class="flex items-baseline">
+                <span class="text-2xl font-bold text-gray-800">{{ current_user.weight_kg if current_user.weight_kg else '--' }}</span>
+                <span class="ml-1 text-sm text-gray-600">кг</span>
+              </div>
+              {% if current_user.weight_kg and bmi %}
+              <div class="mt-2">
+                <div class="level-indicator">
+                  {# Розрахунок позиції маркера більш точно #}
+                  {% set weight_percent = ((current_user.weight_kg/150)*100)|round(0) %}
+                  {% if weight_percent > 100 %}{% set weight_percent = 100 %}{% elif weight_percent < 0 %}{% set weight_percent = 0 %}{% endif %}
+                  <div class="bg-amber-400" style="width: {{ weight_percent }}%;"></div>
+                </div>
+                <div class="flex justify-between mt-1 text-xs">
+                  {% set recommended = (22 * height_m * height_m)|round(0) if height_m else None %}
+                  <span class="text-gray-500">{% if recommended %}Рекомендована: {{ recommended }} кг{% endif %}</span>
+                  {% if recommended %}
+                    {% set diff = (current_user.weight_kg - recommended)|round(0) %}
+                    <span class="font-medium text-amber-600">{% if diff>0 %}+{{ diff }} кг{% elif diff<0 %}-{{ diff|abs }} кг{% endif %}</span>
+                  {% endif %}
+                </div>
+              </div>
+              {% endif %}
+            </div>
+
+            {# Тиск (Давление) #}
+            <div class="stat-card bg-white p-3 rounded-lg border border-gray-100 shadow-sm" :class="{ 'ring-2 ring-cyan-500 ring-opacity-50': activeParameter == 'blood_pressure' }">
+              {# Верхня панель: назва, статус, іконка редагування #}
+              {% set bp_status = get_bp_status(latest_bp.systolic if latest_bp else None, latest_bp.diastolic if latest_bp else None, profile_user.usual_systolic, profile_user.usual_diastolic) %}
+              <div class="flex justify-between items-start mb-1.5">
+                <span class="text-xs font-medium text-gray-500 uppercase">Тиск</span>
+                <div class="flex items-center gap-1">
+                  {% set badge_bg = (bp_status.color|replace('text-','bg-'))
+                                    .replace('600','100')
+                                    .replace('700','100') %}
+                  <span class="px-1.5 py-0.5 text-xs font-medium rounded {{ badge_bg }} {{ bp_status.color }}">
+                      {{ bp_status.label }}
+                  </span>
+                  <a href="{{ url_for('add_blood_pressure') }}" title="Додати вимір"
+                     class="text-gray-400 hover:text-cyan-600 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                    </svg>
+                  </a>
+                </div>
+              </div>
+              {% if latest_bp %}
+                <div class="flex items-baseline">
+                  <span class="text-2xl font-bold text-gray-800">{{ latest_bp.systolic }}/{{ latest_bp.diastolic }}</span>
+                  <span class="ml-1 text-sm text-gray-600">мм рт.ст.</span>
+                </div>
+                <p class="text-xs text-gray-500 mt-1">Останнє: {{ latest_bp.timestamp.strftime('%Y-%m-%d %H:%M') }}</p>
+              {% else %}
+                <span class="text-xl font-medium text-gray-400">--/--</span>
+                <p class="text-xs text-gray-500 mt-1">Немає даних</p>
+              {% endif %}
+            </div>
+          </div>
+
+          {# Прийом ліків #}
+          <div class="bg-white p-4 rounded-lg border border-gray-100 shadow-sm">
+            <div class="flex items-center mb-3">
+              <div class="p-1.5 bg-cyan-100 rounded-full mr-3">
+                <img src="{{ url_for('static', filename='images/logo_medtrack.png') }}" alt="Logo" class="h-5 w-5" />
+              </div>
+              <span class="font-medium text-gray-700">Приймає ліки</span>
+            </div>
+            <div class="flex justify-between items-center">
+              {% if current_user.current_medications %}
+                <span class="text-sm text-gray-700 truncate max-w-xs" title="{{ current_user.current_medications }}">{{ current_user.current_medications }}</span>
+              {% else %}
+                <span class="text-sm text-gray-700">Немає призначених ліків</span>
+              {% endif %}
+              <a href="#" class="flex items-center text-sm text-cyan-600 hover:text-cyan-700 transition">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                </svg>
+                Додати
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {# --------------------------------------------------- #}
+  {# Боковая колонка (4 колонки)                          #}
+  {# --------------------------------------------------- #}
+  <div class="col-span-12 lg:col-span-4 flex flex-col space-y-6">
+    {# Історія аналізів #}
+    <div class="bg-white rounded-xl shadow-md overflow-hidden">
+      <div class="h-1.5 bg-gradient-to-r from-cyan-500 to-blue-500"></div>
+      <div class="p-6">
+        <div class="flex items-center mb-4">
+          <div class="p-1.5 bg-cyan-100 rounded-full mr-3">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-cyan-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+            </svg>
+          </div>
+          <h3 class="text-lg font-semibold text-gray-800">Історія аналізів</h3>
+        </div>
+        <p class="text-gray-600 mb-6">Перегляньте історію ваших попередніх аналізів, результати інтерпретації та динаміку змін.</p>
+        <a href="{{ url_for('history_page') }}" class="w-full py-2.5 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 rounded-lg flex items-center justify-center transition">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+          </svg>
+          Переглянути всю історію
+        </a>
+      </div>
+    </div>
+
+    {# Завантажити новий аналіз #}
+    <div  x-data="chatWidget()"
+          x-init="$nextTick(()=>$refs.input.focus())"
+          class="bg-white rounded-xl shadow-md flex flex-col" style="height:28rem">
+      <!-- Заголовок (опціонально) -->
+      <div class="flex-shrink-0 px-4 py-3 border-b border-gray-200">
+          <div class="grid grid-cols-[auto_1fr_auto] items-center gap-2 w-full">
+               <div class="p-1.5 bg-cyan-100 rounded-full">
+                   <img src="{{ url_for('static', filename='images/logo_medtrack.png') }}" alt="Logo" class="h-5 w-5" />
+               </div>
+               <h3 class="text-lg font-semibold text-gray-800 whitespace-nowrap">Чат з Medtrack AI</h3>
+               <button @click="refreshData()" class="text-xs font-medium text-cyan-600 hover:text-cyan-800 inline-flex items-center gap-1 px-1.5 py-0.5 rounded">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                     <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 4.5v6h6M19.5 19.5v-6h-6" />
+                     <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 10.5 3 9a9 9 0 0113.606-5.365M19.5 13.5 21 15a9 9 0 01-13.606 5.365" />
+                  </svg>
+                  Оновити дані
+               </button>
+           </div>
+      </div>
+
+      <!-- Область повідомлень (скролиться) -->
+      <div x-ref="scrollArea" class="flex-1 px-4 py-4 overflow-y-auto space-y-4">
+        <template x-for="msg in messages" :key="msg.id">
+          <div class="flex" :class="msg.role==='user' ? 'justify-end' : 'justify-start'">
+            <div class="px-3 py-2 rounded-lg text-sm max-w-xs md:max-w-sm break-words"
+                 :class="msg.role==='user' ? 'bg-cyan-100 text-cyan-800' : 'bg-gray-100 text-gray-800'"
+                 x-html="msg.html"></div>
+          </div>
+        </template>
+      </div>
+
+      <!-- Форма вводу (прикріплена до низу) -->
+      <div class="flex-shrink-0 px-4 py-3 bg-gray-50 border-t border-gray-200">
+          <form @submit.prevent="send" class="flex gap-2 w-full">
+              <input x-ref="input" x-model="userInput" :disabled="loading"
+                     type="text" placeholder="Ваше запитання..."
+                     class="flex-1 border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500" />
+              <button :disabled="loading || !userInput.trim()" type="submit"
+                      class="bg-cyan-600 hover:bg-cyan-700 text-white px-4 py-2 rounded-md text-sm transition flex-shrink-0"
+                      x-text="loading ? '...' : 'Надіслати'"></button>
+          </form>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+{# ===================================================== #}
+{# Секція останніх завантажених аналізів                  #}
+{# ===================================================== #}
+<div class="mt-6">
+  <h2 class="text-xl font-semibold text-gray-800 mb-4">Останні завантажені аналізи</h2>
+  {% if analyses %}
+    <div class="overflow-x-auto bg-white rounded-xl border border-gray-100 shadow-sm">
+      <table class="min-w-full divide-y divide-gray-100">
+        <thead class="bg-gray-50 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+          <tr>
+            <th scope="col" class="px-4 py-3 text-left">Тип</th>
+            <th scope="col" class="px-4 py-3 text-left">Дата аналізу</th>
+            <th scope="col" class="px-4 py-3 text-left">Файл</th>
+            <th scope="col" class="px-4 py-3 text-left">Завантажено</th>
+            <th scope="col" class="px-4 py-3"></th>
+          </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-100">
+          {% for analysis in analyses %}
+          <tr class="hover:bg-gray-50 transition-colors">
+            <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-800">
+              {% set doc_type_display = analysis.document_type %}
+              {% if doc_type_display == 'blood_test' %}Аналіз крові
+              {% elif doc_type_display == 'urine_test' %}Аналіз сечі
+              {% elif doc_type_display == 'stool_test' %}Аналіз калу
+              {% elif doc_type_display == 'ultrasound' %}УЗД
+              {% elif doc_type_display == 'mri' %}МРТ
+              {% elif doc_type_display == 'ct' %}КТ
+              {% elif doc_type_display == 'conclusion' %}Висновок
+              {% elif doc_type_display == 'other' %}Інше
+              {% else %}{{ doc_type_display or "N/A" }}
+              {% endif %}
+            </td>
+            <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">{{ analysis.analysis_date or "-" }}</td>
+            <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500 truncate max-w-xs" title="{{ analysis.filename.split('_', 1)[1] if '_' in analysis.filename else analysis.filename }}">
+              {{ analysis.filename.split('_', 1)[1] if '_' in analysis.filename else analysis.filename }}
+            </td>
+            <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">{{ analysis.upload_timestamp.strftime('%Y-%m-%d') }}</td>
+            <td class="px-4 py-4 whitespace-nowrap text-right text-sm font-medium">
+              <a href="{{ url_for('analysis_detail', analysis_id=analysis.id) }}" class="text-cyan-600 hover:text-cyan-700 font-semibold">Детальніше</a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="bg-gray-50 border border-gray-200 rounded-xl p-8 flex flex-col items-center justify-center">
+      <div class="p-3 bg-gray-100 rounded-full mb-3">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+      </div>
+      <p class="text-gray-600 mb-2">У вас поки що немає завантажених аналізів</p>
+      <p class="text-gray-500 text-sm mb-4">Завантажте свій перший аналіз для отримання інтерпретації</p>
+      <a href="{{ url_for('upload_analysis_page') }}" class="px-4 py-2 text-sm text-cyan-600 bg-cyan-50 hover:bg-cyan-100 rounded-md transition flex items-center">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+        </svg>
+        Завантажити аналіз
+      </a>
+    </div>
+  {% endif %}
+
+  <!-- Кнопка під таблицею -->
+  <div class="flex justify-end mt-4">
+      <a href="{{ url_for('upload_analysis_page') }}"
+         class="gradient-btn inline-flex items-center px-4 py-2 text-sm font-medium text-white rounded-md transition">
+         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+         </svg>
+         Завантажити новий аналіз
+      </a>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    {{ super() }}
+    <script>
+    function chatWidget() {
+        return {
+            messages: [], // только видимые user/assistant
+            systemPrompt: 'Ти Medtrack AI — персональний медичний асистент. Відповідай українською. Спершу коротко і позитивно підсумуй, що наразі в межах норми (1–2 речення). Лише після цього в окремому абзаці перелічуй відхилення з останніх показників і дай лаконічні рекомендації (наприклад: звернутися до лікаря, здати додаткові аналізи, переглянути спосіб життя). Не став формальних діагнозів і не призначай конкретних ліків.',
+            systemContext: '',
+            userInput: '',
+            loading: false,
+            idCounter: 0,
+            init() {
+                // Привітальне повідомлення
+                this.addMessage('assistant', 'Вітаю! Я Medtrack AI. Поставте мені питання щодо ваших аналізів або здоровʼя.');
+                // Початкове тихе підвантаження даних без повідомлення
+                this.refreshData(false);
+            },
+            refreshData(showMessage = true) {
+                fetch('/api/chat/profile_context?full=1')
+                  .then(r => r.json())
+                  .then(ctx => {
+                      this.systemContext = 'Повний контекст користувача: '+JSON.stringify(ctx);
+                      if (showMessage) {
+                          this.addMessage('assistant', 'Дані оновлено. Я отримав усі наявні аналізи та параметри.');
+                      }
+                  })
+                  .catch(()=>{
+                      this.addMessage('assistant', 'Не вдалося оновити дані');
+                  });
+            },
+            format(text) {
+                // Конвертуємо простий Markdown (**жирний**, *курсив*, списки, заголовки)
+                try {
+                    return marked.parse(text);
+                } catch (e) {
+                    // Fallback: просте екранування і <br>
+                    const escaped = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                    return escaped.replace(/\n/g, '<br>');
+                }
+            },
+            addMessage(role, content) {
+                this.messages.push({ id: this.idCounter++, role, html: this.format(content) });
+                this.$nextTick(() => {
+                    this.$refs.scrollArea.scrollTop = this.$refs.scrollArea.scrollHeight;
+                });
+            },
+            async send() {
+                if (!this.userInput.trim()) return;
+                const text = this.userInput.trim();
+                this.addMessage('user', text);
+                this.userInput = '';
+                this.loading = true;
+                try {
+                    const resp = await fetch('/api/chat', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ messages: [
+                          {role:'system', content:this.systemPrompt},
+                          {role:'system', content:this.systemContext},
+                          ...this.messages.map(m=>({role:m.role, content:m.html.replace(/<br>/g,"\n").replace(/<[^>]+>/g,'')}))
+                        ] })
+                    });
+                    const data = await resp.json();
+                    if (data.assistant) {
+                        this.addMessage('assistant', data.assistant);
+                    } else {
+                        this.addMessage('assistant', 'Помилка: не отримано відповіді від сервера');
+                    }
+                } catch (e) {
+                    this.addMessage('assistant', 'Помилка зʼєднання з сервером');
+                } finally {
+                    this.loading = false;
+                    this.$nextTick(() => {
+                        this.$refs.scrollArea.scrollTop = this.$refs.scrollArea.scrollHeight;
+                    });
+                }
+            }
+        }
+    }
+    </script>
+{% endblock %}

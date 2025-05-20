@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} - Medtrack AI{% endblock %}
+
+{% block content %}
+<div class="max-w-lg mx-auto bg-white p-8 rounded-lg shadow-lg">
+    <h2 class="text-xl font-semibold text-gray-800 mb-6">{{ title }}</h2>
+
+    <form method="POST" action="{{ url_for('add_blood_pressure') }}" novalidate>
+        {{ form.hidden_tag() }} {# CSRF токен #}
+
+        <div class="mb-4">
+            {{ form.systolic.label(class="block text-gray-700 text-sm font-bold mb-2") }}
+            {{ form.systolic(class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" + (" border-red-500" if form.systolic.errors else ""), type="number", placeholder="Напр., 120") }}
+            {% if form.systolic.errors %}
+                {% for error in form.systolic.errors %}
+                    <p class="text-red-500 text-xs italic mt-2">{{ error }}</p>
+                {% endfor %}
+            {% endif %}
+        </div>
+
+        <div class="mb-6">
+            {{ form.diastolic.label(class="block text-gray-700 text-sm font-bold mb-2") }}
+            {{ form.diastolic(class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" + (" border-red-500" if form.diastolic.errors else ""), type="number", placeholder="Напр., 80") }}
+            {% if form.diastolic.errors %}
+                {% for error in form.diastolic.errors %}
+                    <p class="text-red-500 text-xs italic mt-2">{{ error }}</p>
+                {% endfor %}
+            {% endif %}
+        </div>
+
+        <div class="flex items-center justify-between">
+            {{ form.submit(class="w-full px-4 py-2 bg-primary-500 text-white font-semibold rounded-lg shadow-md hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-300 focus:ring-opacity-50 transition ease-in-out duration-150") }}
+            <a href="{{ url_for('dashboard') }}" class="inline-block align-baseline font-bold text-sm text-gray-600 hover:text-gray-800">
+                Скасувати
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %} 

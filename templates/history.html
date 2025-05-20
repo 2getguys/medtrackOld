@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} - Medtrack AI{% endblock %}
+
+{% block content %}
+<!-- Кнопка назад -->
+<a href="{{ url_for('dashboard') }}" class="inline-flex items-center text-cyan-600 text-sm mb-4 hover:underline">
+   <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" /></svg>
+   Назад до дашборду
+</a>
+
+<h1 class="text-2xl font-bold text-gray-800 mb-6">Історія аналізів</h1>
+<div x-data="historyPage()" class="bg-white rounded-xl shadow-md p-6">
+  <!-- Верхня панель -->
+  <div class="flex flex-col md:flex-row md:items-end gap-4 mb-6">
+     <div class="flex-1">
+         <label class="block text-sm font-medium text-gray-700 mb-1">Показник</label>
+         <select x-model="currentIndicator" @change="load()" class="border rounded-md px-3 py-2 w-full text-sm focus:ring-cyan-500 focus:border-cyan-500">
+            <option disabled value="">— Оберіть —</option>
+            <template x-for="ind in indicators" :key="ind">
+              <option x-text="ind"></option>
+            </template>
+         </select>
+     </div>
+     <button @click="compareMode = !compareMode" type="button" class="text-cyan-600 text-sm flex items-center gap-1 mt-2 md:mt-0">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487a9.053 9.053 0 00-3.611-1.257 2.25 2.25 0 10-4.502 0 9.053 9.053 0 00-3.611 1.257 21.752 21.752 0 00-2.878 2.072.75.75 0 00-.189.908l.733 1.664a.75.75 0 00.906.39l1.812-.604a9.055 9.055 0 011.113-.312 2.25 2.25 0 104.502 0 9.055 9.055 0 011.113.312l1.812.604a.75.75 0 00.906-.39l.733-1.664a.75.75 0 00-.189-.908 21.752 21.752 0 00-2.878-2.072z" /><path stroke-linecap="round" stroke-linejoin="round" d="M7.5 15.75a2.25 2.25 0 114.5 0 .75.75 0 00.75.75h.5a9.046 9.046 0 013.7.803l1.812.604a.75.75 0 00.906-.39l.733-1.664a.75.75 0 00-.189-.908 21.752 21.752 0 00-2.878-2.072 9.053 9.053 0 00-3.611-1.257 2.25 2.25 0 10-4.502 0 9.053 9.053 0 00-3.611 1.257 21.753 21.753 0 00-2.878 2.072.75.75 0 00-.189.908l.733 1.664a.75.75 0 00.906.39l1.812-.604A9.046 9.046 0 017.25 16.5h.5a.75.75 0 00.75-.75z" /></svg>
+        <span x-text="compareMode ? 'Вимкнути порівняння' : 'Порівняти дати'"></span>
+     </button>
+  </div>
+
+  <!-- Графік -->
+  <div class="mb-6 h-72">
+     <canvas x-ref="chart" class="w-full h-full"></canvas>
+  </div>
+
+  <!-- Таблиця -->
+  <table class="min-w-full divide-y divide-gray-100 text-sm" x-show="timeline && timeline.length">
+     <thead class="bg-gray-50 text-xs font-medium text-gray-500 uppercase tracking-wider">
+        <tr>
+           <th class="px-4 py-3 text-left">Дата</th>
+           <th class="px-4 py-3 text-left">Значення</th>
+           <th class="px-4 py-3 text-left">Реф. діапазон</th>
+           <th class="px-4 py-3 text-left">Статус</th>
+        </tr>
+     </thead>
+     <tbody class="divide-y divide-gray-100">
+        <template x-for="(row, i) in timeline" :key="row.date + '_' + i">
+           <tr :class="row.status==='high' ? 'bg-red-50' : row.status==='low' ? 'bg-blue-50' : ''">
+              <td class="px-4 py-2 whitespace-nowrap" x-text="row.date"></td>
+              <td class="px-4 py-2" x-text="row.value + ' ' + (row.units || '')"></td>
+              <td class="px-4 py-2" x-text="row.ref || '–'"></td>
+              <td class="px-4 py-2 font-medium" :class="row.status==='high' ? 'text-red-700' : row.status==='low' ? 'text-blue-700' : 'text-green-600'" x-text="row.status==='high' ? 'Високий' : row.status==='low' ? 'Низький' : 'Норма'"></td>
+           </tr>
+        </template>
+     </tbody>
+  </table>
+
+  <p x-show="!timeline.length" class="text-gray-500 text-sm">Дані відсутні або показник не вибрано.</p>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+function historyPage() {
+  return {
+    indicators: [],
+    currentIndicator: '',
+    timeline: [],
+    chart: null,
+    compareMode: false,
+    // Инициализация
+    init() {
+      fetch('/api/available_indicators')
+        .then(r => r.json())
+        .then(list => {
+          this.indicators = list;
+          if (list.length) {
+            this.currentIndicator = list[0];
+            this.load();
+          }
+        });
+    },
+    // Загрузка таймлайна и построение графика
+    load() {
+      if (!this.currentIndicator) return;
+
+      fetch('/api/indicator_timeline?name=' + encodeURIComponent(this.currentIndicator))
+        .then(r => r.json())
+        .then(data => {
+          // Данные для таблицы (от новых к старым)
+          this.timeline = [...data];
+
+          // Данные для графика (по возрастанию даты)
+          const chronological = [...data].sort((a, b) => new Date(a.date) - new Date(b.date));
+          const labels = chronological.map(d => d.date);
+          const rawVals = chronological.map(d => parseFloat(d.value));
+          const values = rawVals.map(v => (Number.isFinite(v) ? v : null));
+
+          // Подбор диапазона оси Y
+          let minY, maxY;
+          const numeric = values.filter(v => v !== null);
+          if (numeric.length) {
+            minY = Math.min(...numeric);
+            maxY = Math.max(...numeric);
+            if (minY === maxY) {
+              minY = minY * 0.9;
+              maxY = maxY * 1.1;
+            }
+          }
+
+          // Пересоздаём график, чтобы избежать утечек памяти и бесконечных циклов
+          if (this.chart) {
+            this.chart.destroy();
+          }
+          const ctx = this.$refs.chart.getContext('2d');
+          this.chart = new Chart(ctx, {
+            type: 'line',
+            data: {
+              labels: labels,
+              datasets: [{
+                label: this.currentIndicator,
+                data: values,
+                tension: 0.3,
+                borderColor: '#06b6d4',
+                pointBackgroundColor: '#06b6d4',
+                fill: false
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: { display: false },
+                tooltip: {
+                  callbacks: {
+                    label: ctx => ctx.parsed.y + (chronological[ctx.dataIndex]?.units || '')
+                  }
+                }
+              },
+              scales: {
+                y: {
+                  beginAtZero: false,
+                  min: minY,
+                  max: maxY
+                }
+              }
+            }
+          });
+        });
+    }
+  }
+}
+</script>
+{% endblock %} 

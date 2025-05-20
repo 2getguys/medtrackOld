@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Завершення Реєстрації - Medtrack AI</title>
+    <!-- Стили Tailwind -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="bg-gray-100 font-sans flex items-center justify-center min-h-screen">
+
+    <div class="max-w-lg w-full bg-white p-8 rounded-lg shadow-lg m-4">
+        <h2 class="text-2xl font-semibold text-center text-gray-800 mb-6">Завершення реєстрації</h2>
+        <p class="text-center text-gray-600 mb-6">Будь ласка, заповніть інформацію про себе. Це допоможе нам точніше аналізувати ваші медичні дані.</p>
+
+        <form method="POST" action="{{ url_for('profile_setup') }}" novalidate>
+            {{ form.hidden_tag() }} <!-- CSRF токен -->
+
+            <!-- Імʼя -->
+            <div class="mb-4">
+                {{ form.name.label(class="block text-gray-700 text-sm font-bold mb-2") }}
+                {{ form.name(class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" + (" border-red-500" if form.name.errors else "")) }}
+                {% if form.name.errors %}
+                    {% for error in form.name.errors %}
+                        <p class="text-red-500 text-xs italic mt-2">{{ error }}</p>
+                    {% endfor %}
+                {% endif %}
+            </div>
+
+            <!-- Дата Рождения -->
+            <div class="mb-4">
+                {{ form.date_of_birth.label(class="block text-gray-700 text-sm font-bold mb-2") }}
+                {{ form.date_of_birth(class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" + (" border-red-500" if form.date_of_birth.errors else ""), type="date") }} {# Указываем type="date" для удобного выбора #}
+                {% if form.date_of_birth.errors %}
+                    {% for error in form.date_of_birth.errors %}
+                        <p class="text-red-500 text-xs italic mt-2">{{ error }}</p>
+                    {% endfor %}
+                {% endif %}
+                 <p class="text-gray-600 text-xs mt-1">{{ form.date_of_birth.description }}</p>
+            </div>
+
+            <!-- Пол -->
+            <div class="mb-4">
+                {{ form.sex.label(class="block text-gray-700 text-sm font-bold mb-2") }}
+                {{ form.sex(class="block w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2.5" + (" border-red-500" if form.sex.errors else "")) }}
+                {% if form.sex.errors %}
+                    {% for error in form.sex.errors %}
+                        <p class="text-red-500 text-xs italic mt-2">{{ error }}</p>
+                    {% endfor %}
+                {% endif %}
+            </div>
+
+            <!-- Рост -->
+            <div class="mb-4">
+                {{ form.height_cm.label(class="block text-gray-700 text-sm font-bold mb-2") }}
+                {{ form.height_cm(class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" + (" border-red-500" if form.height_cm.errors else ""), type="number", step="1") }}
+                {% if form.height_cm.errors %}
+                    {% for error in form.height_cm.errors %}
+                        <p class="text-red-500 text-xs italic mt-2">{{ error }}</p>
+                    {% endfor %}
+                {% endif %}
+            </div>
+
+            <!-- Вес -->
+            <div class="mb-4">
+                {{ form.weight_kg.label(class="block text-gray-700 text-sm font-bold mb-2") }}
+                {{ form.weight_kg(class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" + (" border-red-500" if form.weight_kg.errors else ""), type="number", step="0.1") }}
+                {% if form.weight_kg.errors %}
+                    {% for error in form.weight_kg.errors %}
+                        <p class="text-red-500 text-xs italic mt-2">{{ error }}</p>
+                    {% endfor %}
+                {% endif %}
+                 <p class="text-gray-600 text-xs mt-1">{{ form.weight_kg.description }}</p>
+            </div>
+
+             <!-- Статус Курения -->
+            <div class="mb-4">
+                {{ form.is_smoker.label(class="block text-gray-700 text-sm font-bold mb-2") }}
+                {{ form.is_smoker(class="block w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2.5" + (" border-red-500" if form.is_smoker.errors else "")) }}
+                {% if form.is_smoker.errors %}
+                    {% for error in form.is_smoker.errors %}
+                        <p class="text-red-500 text-xs italic mt-2">{{ error }}</p>
+                    {% endfor %}
+                {% endif %}
+            </div>
+
+             <!-- Хронические заболевания -->
+            <div class="mb-4">
+                {{ form.chronic_conditions.label(class="block text-gray-700 text-sm font-bold mb-2") }}
+                {{ form.chronic_conditions(class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" + (" border-red-500" if form.chronic_conditions.errors else "")) }}
+                {% if form.chronic_conditions.errors %}
+                    {% for error in form.chronic_conditions.errors %}
+                        <p class="text-red-500 text-xs italic mt-2">{{ error }}</p>
+                    {% endfor %}
+                {% endif %}
+            </div>
+
+             <!-- Лекарства -->
+            <div class="mb-6">
+                {{ form.current_medications.label(class="block text-gray-700 text-sm font-bold mb-2") }}
+                {{ form.current_medications(class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" + (" border-red-500" if form.current_medications.errors else "")) }}
+                {% if form.current_medications.errors %}
+                    {% for error in form.current_medications.errors %}
+                        <p class="text-red-500 text-xs italic mt-2">{{ error }}</p>
+                    {% endfor %}
+                {% endif %}
+            </div>
+
+            <!-- Кнопка Submit -->
+            <div class="flex items-center justify-center">
+                {{ form.submit(class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded focus:outline-none focus:shadow-outline cursor-pointer") }}
+            </div>
+        </form>
+    </div>
+
+</body>
+</html>

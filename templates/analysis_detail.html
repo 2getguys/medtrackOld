@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} - Medtrack AI{% endblock %}
+
+{% block content %}
+<div class="bg-white p-8 rounded-lg shadow-lg mb-8">
+    <div class="flex justify-between items-start mb-6">
+        <div>
+            <h2 class="text-2xl font-semibold text-gray-800 mb-1">{{ analysis.document_type or "Деталі аналізу" }}</h2>
+            <p class="text-sm text-gray-500">
+                Дата аналізу: {{ analysis.analysis_date or "Не вказано" }} |
+                Завантажено: {{ analysis.upload_timestamp.strftime('%Y-%m-%d %H:%M') }}
+            </p>
+             <p class="text-sm text-gray-500">Файл: {{ analysis.filename.split('_', 1)[1] if '_' in analysis.filename else analysis.filename }}</p>
+        </div>
+        <div>
+             <!-- TODO: Добавить кнопки действий (например, "Удалить", "Редактировать", "Сравнить") -->
+             <a href="{{ url_for('dashboard') }}" class="text-blue-600 hover:text-blue-800">&larr; Назад до кабінету</a>
+        </div>
+    </div>
+
+    {% if analysis.indicators %}
+        <h3 class="text-xl font-semibold text-gray-700 mb-4">Результати показників:</h3>
+        <div class="overflow-x-auto"> {# Для адаптивности на малых экранах #}
+            <table class="min-w-full divide-y divide-gray-200 border">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Назва показника
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Результат
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Одиниці
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Референсні значення
+                        </th>
+                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Відхилення
+                        </th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for indicator in analysis.indicators %}
+                        {# Вызываем нашу функцию для определения статуса #}
+                        {% set status = get_deviation_status(indicator.value, indicator.reference_range) %}
+                        {# Определяем классы для строки или ячейки в зависимости от статуса #}
+                        {% set row_class = '' %}
+                        {% set status_text = '-' %}
+                        {% set status_color = 'text-gray-500' %} {# Цвет текста для статуса #}
+
+                        {% if status == 'low' %}
+                            {% set row_class = 'bg-blue-50' %} {# Слегка синий фон для низкого #}
+                            {% set status_text = 'Низький' %}
+                            {% set status_color = 'text-blue-600 font-semibold' %}
+                        {% elif status == 'high' %}
+                            {% set row_class = 'bg-red-50' %} {# Слегка красный фон для высокого #}
+                            {% set status_text = 'Високий' %}
+                            {% set status_color = 'text-red-600 font-semibold' %}
+                        {% elif status == 'normal' %}
+                             {% set status_text = 'Норма' %}
+                             {% set status_color = 'text-green-600 font-semibold' %}
+                        {% endif %}
+
+                        <tr class="{{ row_class }}"> {# Применяем класс к строке #}
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                {{ indicator.name or "-" }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                                 {{ indicator.value or "-" }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                 {{ indicator.units or "-" }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {{ indicator.reference_range or "-" }}
+                            </td>
+                             <td class="px-6 py-4 whitespace-nowrap text-sm {{ status_color }}"> {# Применяем цвет к статусу #}
+                                {{ status_text }}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+         <p class="text-gray-600">Не вдалося знайти детальні показники для цього аналізу.</p>
+         {% if analysis.raw_result_text %}
+            <h4 class="text-lg font-semibold text-gray-700 mt-6 mb-2">Сирий результат від AI:</h4>
+            <pre class="bg-gray-100 p-4 rounded text-xs overflow-auto">{{ analysis.raw_result_text }}</pre>
+         {% endif %}
+    {% endif %}
+
+    {# TODO: Отобразить "Загальні висновки", если они есть в JSON #}
+
+</div>
+{% endblock %} 

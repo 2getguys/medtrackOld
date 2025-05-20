@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} - Medtrack AI{% endblock %}
+
+{% block content %}
+{# Используем ту же обертку и стили, что и в profile_setup #}
+<div class="max-w-lg mx-auto bg-white p-8 rounded-lg shadow-lg">
+    <h2 class="text-2xl font-semibold text-center text-gray-800 mb-6">{{ title }}</h2>
+
+    {# Форма точно такая же, как в profile_setup, только action другой #}
+    <form method="POST" action="{{ url_for('profile_edit') }}" novalidate>
+        {{ form.hidden_tag() }} <!-- CSRF токен -->
+
+        <!-- ПІБ -->
+        <div class="mb-4">
+            {{ form.name.label(class="block text-gray-700 text-sm font-bold mb-2") }}
+            {{ form.name(class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" + (" border-red-500" if form.name.errors else "")) }}
+            {% if form.name.errors %}{% for error in form.name.errors %}<p class="text-red-500 text-xs italic mt-2">{{ error }}</p>{% endfor %}{% endif %}
+        </div>
+
+        <!-- Дата Рождения -->
+        <div class="mb-4">
+            {{ form.date_of_birth.label(class="block text-gray-700 text-sm font-bold mb-2") }}
+            {# Указываем type="date" для нативного виджета календаря #}
+            {{ form.date_of_birth(class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" + (" border-red-500" if form.date_of_birth.errors else ""), type="date") }}
+            {% if form.date_of_birth.errors %}{% for error in form.date_of_birth.errors %}<p class="text-red-500 text-xs italic mt-2">{{ error }}</p>{% endfor %}{% endif %}
+        </div>
+
+        <!-- Стать -->
+        <div class="mb-4">
+             {{ form.sex.label(class="block text-gray-700 text-sm font-bold mb-2") }}
+             {{ form.sex(class="shadow border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" + (" border-red-500" if form.sex.errors else "")) }}
+             {% if form.sex.errors %}{% for error in form.sex.errors %}<p class="text-red-500 text-xs italic mt-2">{{ error }}</p>{% endfor %}{% endif %}
+        </div>
+
+        <!-- Зріст і Вага -->
+        <div class="grid grid-cols-2 gap-4 mb-4">
+            <div>
+                {{ form.height_cm.label(class="block text-gray-700 text-sm font-bold mb-2") }}
+                {{ form.height_cm(class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" + (" border-red-500" if form.height_cm.errors else ""), type="number", placeholder="Напр., 175") }}
+                {% if form.height_cm.errors %}{% for error in form.height_cm.errors %}<p class="text-red-500 text-xs italic mt-2">{{ error }}</p>{% endfor %}{% endif %}
+            </div>
+            <div>
+                {{ form.weight_kg.label(class="block text-gray-700 text-sm font-bold mb-2") }}
+                {{ form.weight_kg(class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" + (" border-red-500" if form.weight_kg.errors else ""), type="number", step="0.1", placeholder="Напр., 70.5") }}
+                {% if form.weight_kg.errors %}{% for error in form.weight_kg.errors %}<p class="text-red-500 text-xs italic mt-2">{{ error }}</p>{% endfor %}{% endif %}
+            </div>
+        </div>
+
+        <!-- Статус куріння -->
+        <div class="mb-4">
+             {{ form.is_smoker.label(class="block text-gray-700 text-sm font-bold mb-2") }}
+             {{ form.is_smoker(class="shadow border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" + (" border-red-500" if form.is_smoker.errors else "")) }}
+             {% if form.is_smoker.errors %}{% for error in form.is_smoker.errors %}<p class="text-red-500 text-xs italic mt-2">{{ error }}</p>{% endfor %}{% endif %}
+        </div>
+
+        <!-- Обычное давление -->
+        <div class="grid grid-cols-2 gap-4 mb-4">
+            <div>
+                {{ form.usual_systolic.label(class="block text-gray-700 text-sm font-bold mb-2") }}
+                {{ form.usual_systolic(class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" + (" border-red-500" if form.usual_systolic.errors else ""), type="number", placeholder="Напр., 115") }}
+                {% if form.usual_systolic.errors %}{% for error in form.usual_systolic.errors %}<p class="text-red-500 text-xs italic mt-2">{{ error }}</p>{% endfor %}{% endif %}
+            </div>
+            <div>
+                {{ form.usual_diastolic.label(class="block text-gray-700 text-sm font-bold mb-2") }}
+                {{ form.usual_diastolic(class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" + (" border-red-500" if form.usual_diastolic.errors else ""), type="number", placeholder="Напр., 75") }}
+                {% if form.usual_diastolic.errors %}{% for error in form.usual_diastolic.errors %}<p class="text-red-500 text-xs italic mt-2">{{ error }}</p>{% endfor %}{% endif %}
+            </div>
+        </div>
+
+        <!-- Хронические заболевания -->
+        <div class="mb-4">
+            {{ form.chronic_conditions.label(class="block text-gray-700 text-sm font-bold mb-2") }}
+            {{ form.chronic_conditions(class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" + (" border-red-500" if form.chronic_conditions.errors else ""), rows="3") }}
+            {% if form.chronic_conditions.errors %}{% for error in form.chronic_conditions.errors %}<p class="text-red-500 text-xs italic mt-2">{{ error }}</p>{% endfor %}{% endif %}
+        </div>
+
+        <!-- Лекарства -->
+        <div class="mb-6">
+             {{ form.current_medications.label(class="block text-gray-700 text-sm font-bold mb-2") }}
+             {{ form.current_medications(class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" + (" border-red-500" if form.current_medications.errors else ""), rows="3") }}
+             {% if form.current_medications.errors %}{% for error in form.current_medications.errors %}<p class="text-red-500 text-xs italic mt-2">{{ error }}</p>{% endfor %}{% endif %}
+        </div>
+
+        <!-- Кнопки -->
+        <div class="flex items-center justify-between">
+            {# Меняем текст кнопки #}
+            {{ form.submit(class="px-4 py-2 bg-primary-500 text-white font-semibold rounded-lg shadow-md hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-300 focus:ring-opacity-50 transition ease-in-out duration-150", value="Зберегти зміни") }}
+            <a href="{{ url_for('dashboard') }}" class="inline-block align-baseline font-bold text-sm text-gray-600 hover:text-gray-800">
+                Скасувати
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}

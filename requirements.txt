@@ -1,0 +1,11 @@
+Flask>=2.0
+Flask-Login>=0.6.0
+Flask-SQLAlchemy>=3.0
+Flask-WTF>=1.0
+Werkzeug>=2.0 # Werkzeug обычно идет с Flask, но укажем для ясности
+email-validator>=2.0 # Для валидации email в формах WTF 
+Pillow>=9.0 # Для работы с изображениями
+pytesseract>=0.3.8 # Для OCR 
+openai>=1.0 # Для взаимодействия с OpenAI API 
+python-dotenv>=0.19 # Для загрузки переменных из .env файла 
+PyMuPDF>=1.18.19 # Для извлечения текста из PDF 

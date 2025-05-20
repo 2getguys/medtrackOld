@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Динамический заголовок -->
+    <title>{% block title %}Medtrack AI{% endblock %}</title>
+    {# --->>> Добавляем шрифты Inter и Lexend (пример подключения с Google Fonts) <<<--- #}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Lexend:wght@400;500;700&display=swap" rel="stylesheet">
+    {# --->>> Конец добавления шрифтов <<<--- #}
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='custom.css') }}">
+</head>
+{# --->>> ДОБАВЛЯЕМ ФОН С СЕТКОЙ <<<--- #}
+<body class="bg-gray-50 font-sans flex flex-col min-h-screen antialiased bg-grid-pattern bg-grid-size">
+
+    {# --->>> Обновленный Header (Navbar) <<<--- #}
+    <header class="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-gray-100 shadow-sm"> {# Эффект размытия и тень #}
+        <nav class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16"> {# Фикс. высота #}
+                {# Лого и Название #}
+                <div class="flex-shrink-0 flex items-center">
+                    {# SVG логотип (пример, замените на свой) #}
+                    <img src="{{ url_for('static', filename='images/logo_medtrack.png') }}" alt="Medtrack AI Logo" class="h-8 w-8" />
+                    <span class="ml-3 text-xl font-display font-bold text-primary-600">MEDTRACK AI</span> {# Цвет темнее #}
+                </div>
+                {# Навигация #}
+                <div class="hidden md:flex md:items-center md:space-x-8">
+                     {% if current_user.is_authenticated %}
+                         <a href="{{ url_for('dashboard') }}" class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-primary-600 transition-colors">Кабінет</a>
+                         <a href="#" class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-primary-600 transition-colors">Історія (TODO)</a>
+                         <a href="#" class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-primary-600 transition-colors">Допомога (TODO)</a>
+                     {% else %}
+                          <a href="{{ url_for('index') }}" class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-primary-600 transition-colors">Головна</a>
+                          <a href="#features" class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-primary-600 transition-colors">Можливості</a>
+                          <a href="#problem" class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-primary-600 transition-colors">Проблема</a>
+                     {% endif %}
+                </div>
+                 {# Кнопки Вход/Выход #}
+                 <div class="flex items-center">
+                     {% if current_user.is_authenticated %}
+                         <a href="{{ url_for('logout') }}" class="ml-4 px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-primary-500 hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-all">Вийти</a>
+                     {% else %}
+                          <a href="{{ url_for('login') }}" class="text-sm font-medium text-gray-600 hover:text-primary-500 transition-colors mr-4">Увійти</a>
+                          <a href="{{ url_for('register') }}" class="px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-primary-500 hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-all">Зареєструватися</a>
+                     {% endif %}
+                 </div>
+                 {# TODO: Добавить кнопку для мобильного меню #}
+            </div>
+        </nav>
+    </header>
+    {# --->>> КОНЕЦ ОБНОВЛЕННОГО HEADER <<<--- #}
+
+    <main class="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8"> {# Обновлены отступы #}
+        {# ... flash сообщения ... #}
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="mb-6 space-y-3"> {# Отступ снизу #}
+                {% for category, message in messages %}
+                     {# Используем цвета из новой палитры #}
+                     <div class="p-4 rounded-lg shadow-sm border
+                        {% if category == 'danger' %} bg-red-50 border-red-200 text-red-700
+                        {% elif category == 'success' %} bg-green-50 border-green-200 text-green-700
+                        {% elif category == 'warning' %} bg-yellow-50 border-yellow-300 text-yellow-700
+                        {% else %} bg-primary-50 border-primary-200 text-primary-700
+                        {% endif %}" role="alert">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    {# --->>> Обновленный Footer <<<--- #}
+    <footer class="bg-white border-t border-gray-200 mt-16"> {# Светлый футер #}
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-6 text-center text-sm text-gray-500">
+            &copy; {% block year %}2024{% endblock %} Medtrack AI. Всі права захищено.
+        </div>
+    </footer>
+    {# --->>> КОНЕЦ ОБНОВЛЕННОГО FOOTER <<<--- #}
+
+    {# ... scripts ... #}
+    {% block scripts %}
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.12.0/dist/cdn.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+    {% endblock %}
+</body>
+</html>

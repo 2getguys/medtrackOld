@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ page_title|default('MEDTRACK AI - Персональна медична книга') }}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="h-screen overflow-hidden font-sans">
+  <div class="relative h-full bg-gradient-to-br from-primary-600 to-primary-900">
+    <!-- Навігаційне меню -->
+    <nav class="relative z-10 px-4 sm:px-8 py-4">
+      <div class="container mx-auto flex justify-between items-center">
+        <div class="flex items-center space-x-2">
+          <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center">
+            <svg class="w-6 h-6 text-primary-500" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M19.5 12.5719L12 16.9999L4.5 12.5719V7.42793L12 3.00098L19.5 7.42793V12.5719Z" stroke="currentColor" stroke-width="2"/>
+              <path d="M12 16.9999V11.9999" stroke="currentColor" stroke-width="2"/>
+              <path d="M19.5 7.42793L12 11.9999L4.5 7.42793" stroke="currentColor" stroke-width="2"/>
+            </svg>
+          </div>
+          <span class="text-xl font-bold text-white">MEDTRACK AI</span>
+        </div>
+        
+        <div class="hidden md:flex space-x-8">
+          <a href="#" class="text-white hover:text-white/80 transition-colors">Головна</a>
+          <a href="#" class="text-white/80 hover:text-white transition-colors">Можливості</a>
+          <a href="#" class="text-white/80 hover:text-white transition-colors">Про нас</a>
+          <a href="#" class="text-white/80 hover:text-white transition-colors">Контакти</a>
+        </div>
+        
+        <div class="flex space-x-2">
+          <a href="{{ url_for('login') }}" class="px-4 py-1 border-2 border-white text-white rounded-lg hover:bg-white hover:text-primary-700 transition-colors">
+            Увійти
+          </a>
+          <a href="{{ url_for('register') }}" class="px-4 py-1 bg-white text-primary-700 rounded-lg hover:bg-gray-100 transition-colors">
+            Реєстрація
+          </a>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Основний контент -->
+    <main class="relative z-10 pt-20 pb-20 flex items-center justify-center">
+      <div class="text-center text-white max-w-3xl px-4">
+        <h1 class="text-5xl md:text-6xl font-bold mb-6 leading-tight">
+          Ваша персональна<br>цифрова медична книга
+        </h1>
+        <p class="text-lg md:text-xl text-white/90 mb-10">
+          Зберігайте, аналізуйте та контролюйте свої медичні дані легко та безпечно з допомогою штучного інтелекту.
+        </p>
+        <a href="{{ url_for('register') }}" 
+           class="inline-block bg-white text-primary-700 font-semibold px-8 py-3 rounded-lg shadow-lg hover:bg-gray-100 transition-colors text-lg">
+          Створити акаунт
+        </a>
+      </div>
+    </main>
+
+    <!-- Декоративні елементи -->
+    <div class="absolute top-0 left-0 w-1/2 h-1/2 bg-gradient-to-br from-white/10 to-transparent rounded-full blur-3xl opacity-30"></div>
+    <div class="absolute bottom-0 right-0 w-1/3 h-1/3 bg-gradient-to-tl from-white/5 to-transparent rounded-full blur-3xl opacity-20"></div>
+  </div>
+</body>
+</html>

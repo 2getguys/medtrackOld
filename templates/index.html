@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medtrack AI</title>
+    <!-- Ссылка на CSS, генерируемый Tailwind -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="bg-gray-100 font-sans flex flex-col min-h-screen">
+
+    <!-- Header -->
+    <header class="bg-white shadow-md">
+        <nav class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <h1 class="text-2xl font-bold text-blue-600">Medtrack AI</h1>
+            <ul class="flex space-x-6">
+                <li><a href="#" class="text-gray-700 hover:text-blue-600 font-medium">Головна</a></li>
+                <li><a href="#" class="text-gray-700 hover:text-blue-600 font-medium">Завантажити аналіз</a></li>
+                <li><a href="#" class="text-gray-700 hover:text-blue-600 font-medium">Мої дані</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-grow container mx-auto px-4 py-8">
+        <div class="bg-white p-8 rounded-lg shadow-lg max-w-2xl mx-auto">
+            <h2 class="text-xl font-semibold text-gray-800 mb-2">Завантажте ваш медичний аналіз</h2>
+            <p class="text-gray-600 mb-6">Виберіть файл (PDF, JPG, PNG) для аналізу:</p>
+
+            <!-- Форма для загрузки файла -->
+            <form action="/upload" method="post" enctype="multipart/form-data">
+                <div class="border-2 border-dashed border-blue-500 rounded-md p-6 text-center mb-4 cursor-pointer hover:border-blue-700 transition duration-300 ease-in-out upload-area">
+                     <input type="file" name="analysis_file" id="analysis_file" accept=".pdf,.jpg,.jpeg,.png" required class="hidden">
+                     <label for="analysis_file" class="inline-block bg-blue-600 text-white px-6 py-2 rounded-md cursor-pointer hover:bg-blue-700 transition duration-300 ease-in-out">
+                         Вибрати файл
+                     </label>
+                     <span id="file-name" class="block text-sm text-gray-500 mt-2 italic">Файл не вибрано</span>
+                </div>
+                <button type="submit" class="w-full bg-green-600 text-white px-6 py-3 rounded-md hover:bg-green-700 transition duration-300 ease-in-out font-semibold">
+                    Завантажити та проаналізувати
+                </button>
+            </form>
+            <!-- Конец формы -->
+
+            <!-- Статус загрузки -->
+            <div id="upload-status" class="mt-4 text-center font-medium"></div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white mt-auto">
+        <div class="container mx-auto px-4 py-4 text-center text-sm">
+            &copy; 2024 Medtrack AI. Всі права захищено.
+        </div>
+    </footer>
+
+    <!-- Ссылка на JS остается прежней -->
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html> 

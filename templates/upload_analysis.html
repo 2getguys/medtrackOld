@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}Завантажити Аналіз - Medtrack AI{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto bg-white p-8 rounded-lg shadow-lg">
+    <div class="mb-4">
+        <a href="{{ url_for('dashboard') }}" class="inline-flex items-center text-sm text-cyan-600 hover:text-cyan-700 transition">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+            </svg>
+            Назад до кабінету
+        </a>
+    </div>
+    <h2 class="text-xl font-semibold text-gray-800 mb-2">Завантажити новий медичний документ</h2>
+    <p class="text-gray-600 mb-6">Виберіть тип документу та сам файл (PDF, JPG, PNG).</p>
+
+    <form action="{{ url_for('upload_file') }}" method="post" enctype="multipart/form-data">
+
+        <!-- Выпадающий список -->
+        <div class="mb-4">
+            <label for="document_type" class="block text-gray-700 text-sm font-bold mb-2">Тип документу:</label>
+            <select name="document_type" id="document_type" required
+                    class="block w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2.5">
+                <option value="" selected disabled>-- Оберіть тип --</option>
+                <option value="blood_test">Аналіз крові (загальний, біохімія)</option>
+                <option value="urine_test">Аналіз сечі</option>
+                <option value="stool_test">Аналіз калу</option>
+                <option value="ultrasound">УЗД (Ультразвукове дослідження)</option>
+                <option value="mri">МРТ (Магнітно-резонансна томографія)</option>
+                <option value="ct">КТ (Комп'ютерна томографія)</option>
+                <option value="conclusion">Висновок/Консультація лікаря</option>
+                <option value="other">Інше</option>
+            </select>
+        </div>
+
+        <!-- Поле для выбора файла (стандартный input) -->
+        <div class="mb-4">
+            <label for="analysis_file" class="block text-gray-700 text-sm font-bold mb-2">Файл для завантаження:</label>
+            <input type="file" name="analysis_file" id="analysis_file" accept=".pdf,.jpg,.jpeg,.png" required
+                   class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none
+                          file:mr-4 file:py-2 file:px-4
+                          file:rounded-md file:border-0
+                          file:text-sm file:font-semibold
+                          file:bg-blue-600 file:text-white
+                          hover:file:bg-blue-700 transition duration-300 ease-in-out"/>
+            <span id="file-name" class="block text-sm text-gray-500 mt-2 italic">Файл не вибрано</span>
+        </div>
+
+        <button type="submit" class="w-full bg-green-600 text-white px-6 py-3 rounded-md hover:bg-green-700 transition duration-300 ease-in-out font-semibold mt-6">
+            Завантажити та проаналізувати
+        </button>
+    </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{# JS только для имени файла #}
+{{ super() }}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const fileInput = document.getElementById('analysis_file');
+    const fileNameSpan = document.getElementById('file-name');
+    if (fileInput && fileNameSpan) {
+        fileInput.addEventListener('change', function() {
+            if (fileInput.files.length > 0) {
+                fileNameSpan.textContent = `Вибраний файл: ${fileInput.files[0].name}`;
+            } else {
+                fileNameSpan.textContent = 'Файл не вибрано';
+            }
+        });
+    }
+});
+</script>
+{% endblock %} 

@@ -1,0 +1,24 @@
+# Файлы окружения
+.env
+venv/
+instance/
+
+# Байт-код Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Файлы IDE
+.vscode/
+.idea/
+*.swp
+
+# Зависимости Node
+node_modules/
+
+# Файлы ОС
+.DS_Store
+Thumbs.db
+
+# Папка с загрузками (если не нужно ее версионировать)
+uploads/ 
